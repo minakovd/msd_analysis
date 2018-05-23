@@ -5,14 +5,11 @@
 #include "Reader.h"
 
 Reader::Reader(string filename, string auxfilename, int skipLines) {
-//    filetype_ = filetype;
-//    MsdCalculator msdCalculator;
     setFilename(filename);
 //    TODO: input filename
     setAuxiliaryFilename(auxfilename);
     setInputFilename("");
     setSkipLines(skipLines);
-//    setMsdCalculator(msdCalculator);
 }
 
 //<editor-fold desc="Setters">
@@ -118,6 +115,9 @@ void Reader::readFile() {
     else {
         throw invalid_argument("Unable to open file");
     }
+    writeResultsIntoFile(getMsdCalculator());
+    printDiffusionCoefficient();
+    writeDiffusionCoefficient(getMsdCalculator());
 }
 
 /// Reads LAMMPS trajectory file
@@ -218,8 +218,6 @@ void Reader::readLammpsFile(ifstream &infile) {
         infile.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //ITEM: TIMESTEP
     }
     printProgressFooter();
-
-    writeResultsIntoFile(getMsdCalculator());
 //    cell.printMsd();
 }
 
@@ -370,7 +368,6 @@ void Reader::readVaspFile(ifstream &infile) {
         getline(infile, line); // timestep
     }
     printProgressFooter();
-    writeResultsIntoFile(getMsdCalculator());
 }
 
 void Reader::readAuxiliaryFile(string filename, string filetype) {
@@ -469,6 +466,8 @@ void Reader::printUnits() {
          << "; timestep is " << getMsdCalculator().getTimeStepSize() << endl;
 }
 
+//<editor-fold desc="Progress bar">
+
 void Reader::printProgressHeader(int step) {
     cout << "Progress: " << endl;
     cout << step << " step of " << getMsdCalculator().getNumberOfSteps() << " steps" << '\r';
@@ -484,9 +483,47 @@ void Reader::printProgressFooter() {
     cout << endl;
 }
 
+//</editor-fold>
+
 void Reader::readInputFile(string filename) {
 //    TODO: realize several atom types
 }
 
+void Reader::printDiffusionCoefficient() {
+    double coef, sigma;
+    getMsdCalculator().calculateDiffusionCoefficient(getMsdCalculator().getMsdPoints(), coef, sigma);
+    cout << "Diffusion coefficient: " << coef
+         << " +/- " << sigma;
+    if (getMsdCalculator().getUnits() != Constants::unitsTypeLJ) {
+        cout << " 10^-9 m2/s";
+    }
+    cout << endl;
+}
 
+void Reader::writeDiffusionCoefficient(MsdCalculator &msdCalculator) {
+    ofstream outFile(Constants::coefDataFileName, ofstream::out);
+    const int width = 30;
+    const int precision = 8;
+    double coef, sigma;
+    string header = "Diffusion";
+    string units = ", 1E-9 m2/s";
 
+    if (outFile.bad()){
+        throw invalid_argument("Problems while writing output file");
+    }
+    if (msdCalculator.getUnits() != Constants::unitsTypeLJ) {
+        header.append(units);
+    }
+    getMsdCalculator().calculateDiffusionCoefficient(msdCalculator.getMsdPoints(), coef, sigma);
+//    Header
+    outFile << fixed << left << setfill(' ')
+            << setw(width) << header
+            << setw(width) << "Sigma"
+            << endl;
+//    Data
+    outFile << fixed << left << setprecision(precision)
+            << setw(width) << coef
+            << setw(width) << sigma
+            << endl;
+    outFile.close();
+}

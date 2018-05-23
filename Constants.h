@@ -28,6 +28,7 @@ namespace Constants {
     extern const std::string vaspAuxFileTimestepString;
 
     extern const std::string outputDataFileName;
+    extern const std::string coefDataFileName;
 };
 
 

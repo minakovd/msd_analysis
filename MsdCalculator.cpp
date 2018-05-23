@@ -105,4 +105,31 @@ void MsdCalculator::printMsd() {
     }
 }
 
+void MsdCalculator::calculateDiffusionCoefficient(const vector<MsdPoint> &msdPoints, double &coef, double &sigma) {
+    vector<double> tvec(msdPoints.size()), msdvec(msdPoints.size());
+    double factor = 1.;
+//    TODO: shift?
+
+    if (getUnits() == Constants::unitsTypeReal) {
+        factor = 1E4; // 10^-9 m2/s for diffusion
+    }
+    else if (getUnits() == Constants::unitsTypeMetal) {
+        factor = 10; // 10^-9 m2/s for diffusion
+    }
+
+    for (int i = 0; i < msdPoints.size(); i++) {
+        tvec[i] = msdPoints[i].getTime();
+        msdvec[i] = msdPoints[i].getMsd() * factor;
+    }
+    double c1, cov11, sumsq;
+    double *t = &tvec[0];
+    double *msd = &msdvec[0];
+    const size_t tStride = 1;
+    const size_t msdStride = 1;
+
+    gsl_fit_mul(t, tStride, msd, msdStride, msdPoints.size(), &c1, &cov11, &sumsq);
+    coef = c1 / 6.0;
+    sigma = (sqrt(cov11));
+}
+
 //</editor-fold>

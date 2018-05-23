@@ -44,8 +44,6 @@ private:
     void readVaspFile(ifstream &);
     void calculateNumberOfSteps(ifstream &, string);
 
-
-
 public:
 //    Constructor
     Reader (string, string, int skipLines = 0);
@@ -70,6 +68,9 @@ public:
     void printProgressHeader(int);
     void printProgress(int);
     void printProgressFooter();
+
+    void printDiffusionCoefficient();
+    void writeDiffusionCoefficient(MsdCalculator &);
 };
 
 

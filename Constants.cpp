@@ -26,4 +26,5 @@ namespace Constants {
     extern const std::string vaspAuxFileTimestepString = "POTIM";
 
     extern const std::string outputDataFileName = "msd_data.dat";
+    extern const std::string coefDataFileName = "difcoef.dat";
 }

@@ -8,6 +8,8 @@
 #include <string>
 #include "Cell.h"
 #include "MsdPoint.h"
+#include "gsl/gsl_fit.h"
+#include "Constants.h"
 
 using namespace std;
 
@@ -48,6 +50,9 @@ public:
 //    Msd methods
     void calculateMsdPoint();
     void printMsd();
+
+//    Diffusion coefficient
+    void calculateDiffusionCoefficient(const vector<MsdPoint> &msdPoints, double &coef, double &sigma);
 };
 
 
